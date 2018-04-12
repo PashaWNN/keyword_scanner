@@ -95,9 +95,11 @@ def add_task():
 
 @app.route('/stop/<int:id>')
 def stop_task(id):
+  if not 'authorized' in session:
+    return redirect('/')
   try:
     tasks[id].stop()
-    return redirect(url_to('show_task', id=id))
+    return redirect(url_for('show_task', id=id))
   except IndexError:
     flash(ERR_WRONG_ID)
     return redirect('/')
@@ -114,6 +116,8 @@ def delete(id):
 
 @app.route('/generate_csv/<int:id>')
 def gen_csv(id):
+  if not 'authorized' in session:
+    return redirect('/')
   try:
     d = tasks[id].result
     start = tasks[id].starttime
@@ -122,13 +126,17 @@ def gen_csv(id):
   except IndexError:
     flash('Ошибка создания CSV')
     return redirect('/')
-  csv = 'Время начала;%s\nВремя окончания;%s\n' % (start, stop)
-  сsv+= 'Карта сайта;%s\n;\n' % link
-  for page, words in d.iteritems():
-    csv += 'Страница;%s' % page
-    csv += 'Фраза;Количество'
-    for s, c in words.iteritems():
-      csv += '%s;%s' % (s, c)
+  csv = ''
+  csv += 'Время начала;%s\nВремя окончания;%s\n' % (start, stop)
+  csv += 'Карта сайта;%s\n;\n' % link
+  for page, words in d.items():
+    csv += 'Страница;%s\n' % page
+    csv += 'Фраза;Количество\n'
+    if len(words)>0:
+      for s, c in words.items():
+        csv += '%s;%s\n' % (s.strip(), c)
+    else:
+      csv += 'Ничего не найдено;\n'
   return Response(
     csv,
     mimetype="text/csv",
@@ -140,6 +148,8 @@ def gen_csv(id):
 
 @app.route('/task/<int:id>')
 def show_task(id):
+  if not 'authorized' in session:
+    return redirect('/')
   try:
     task = tasks[id]
     return render_template('task.html', task=task, title=APP_NAME, logged_in=('authorized' in session))

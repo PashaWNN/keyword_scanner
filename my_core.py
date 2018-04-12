@@ -9,6 +9,7 @@ import csv
 import time
 
 m = pymorphy2.MorphAnalyzer()
+sovp = m.parse('совпадение')[0]
 LOADING_DELAY_MIN = 3
 LOADING_DELAY_MAX = 5
 seed()
@@ -111,16 +112,16 @@ class ParsingThread(Thread):
     self.result = {}
     self.url_list = parse_sitemap(self.link)
     self._log('Завершён разбор sitemap, ссылки получены')
-    self.percent = len(self.url_list)*0.01
     for i, url in enumerate(self.url_list):
       while self.paused:
         pass
       if self.stopped:
+        self.stoptime = time.asctime()
         return
       self._log('Ссылка №%i - адрес %s' % (i, url))
       sleep(randint(LOADING_DELAY_MIN, LOADING_DELAY_MAX))
       self.result[url] = {}
-      self.progress = i * self.percent
+      self.progress = (i/len(self.url_list)) * 100
       page = load_page(url)
       found = 0
       if not re.findall(r'^Ошибка.+$', page):
@@ -129,16 +130,17 @@ class ParsingThread(Thread):
           if count>0:
             self.result[url][w] = count
             found+=1
-            self._log('Ключевая фраза: %s. Найдено %i совпадений.' % (w, count))
+            sov = sovp.make_agree_with_number(count).word
+            self._log('Ключевая фраза: %s. Найдено %i %s.' % (w, count, sov))
         self._log('Найдено %i/%i.' % (found, len(self.words_list)))
-        self.result[url]['Найдено всего'] = '%i/%i' % (found, len(self.words_list))
       else:
         self._log('Страница не загружена. %s' % page)
         self.result[url] = page
     self.progress = 100.0
-    self._log('Работа завершена. Время начала: %s' % time.asctime())
-    self.stoptime(time.acstime())
     self.completed = True
+    self.stopped = True
+    self._log('Работа завершена. Время начала: %s' % time.asctime())
+    self.stoptime = time.asctime()
 
 
   def get_progress(self):
@@ -163,6 +165,7 @@ class ParsingThread(Thread):
 
   def stop(self):
     self._log('Преждевременная остановка.')
+    self.stoptime = time.asctime()
     self.completed = True
     self.stopped = True
 

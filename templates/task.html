@@ -8,6 +8,7 @@
   </div>
   <div class=block>
     <p>Задание #{{ task.threadID }}</p>
+    <p>Прогресс: {{ task.get_progress() }}%</p>
     <p>Статус: {{ task.get_state(h=True) }}</p>
     {% if task.completed %}
       <a href="{{ url_for('gen_csv', id=task.threadID) }}">Скачать отчёт в формате CSV</a>
