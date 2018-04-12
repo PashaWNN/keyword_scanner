@@ -5,11 +5,13 @@ from werkzeug import check_password_hash, generate_password_hash
 from flask import *
 from my_core import *
 from config import *
+import csv
 
 
 # Configuration
 # Все настройки хранятся в файле ./config.py
 
+ERR_WRONG_ID = 'Ошибка: задание с таким ID не найдено!'
 
 tasks = []
 
@@ -97,7 +99,7 @@ def stop_task(id):
     tasks[id].stop()
     return redirect(url_to('show_task', id=id))
   except IndexError:
-    flash('Ошибка: задание с таким ID не найдено!')
+    flash(ERR_WRONG_ID)
     return redirect('/')
 
   
@@ -107,12 +109,33 @@ def delete(id):
     del tasks[id]
     return redirect('/')
   except IndexError:
-    flash('Ошибка: задание с таким ID не найдено!')
+    flash(ERR_WRONG_ID)
     return redirect('/')
 
 @app.route('/generate_csv/<int:id>')
 def gen_csv(id):
-  return redirect('/')
+  try:
+    d = tasks[id].result
+    start = tasks[id].starttime
+    stop = tasks[id].stoptime
+    link = tasks[id].link
+  except IndexError:
+    flash('Ошибка создания CSV')
+    return redirect('/')
+  csv = 'Время начала;%s\nВремя окончания;%s\n' % (start, stop)
+  сsv+= 'Карта сайта;%s\n;\n' % link
+  for page, words in d.iteritems():
+    csv += 'Страница;%s' % page
+    csv += 'Фраза;Количество'
+    for s, c in words.iteritems():
+      csv += '%s;%s' % (s, c)
+  return Response(
+    csv,
+    mimetype="text/csv",
+    headers={"Content-disposition":
+             "attachment; filename=report.csv"}
+  )
+  
   
 
 @app.route('/task/<int:id>')

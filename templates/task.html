@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% block body %}
+<a href={{ url_for('index') }}>Вернуться на главную</a>
 <div class=blockcontainer>
   <div class=block>
     <p>Лог работы(последние 25 сообщений):</p>
@@ -17,7 +18,4 @@
   </div>
 </div>
 <br>
-<form action="{{ url_for('logout') }}" class=login>
-<input type=submit value="Выйти" class="redbtn" />
-</form>
 {% endblock %}

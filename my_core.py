@@ -131,11 +131,13 @@ class ParsingThread(Thread):
             found+=1
             self._log('Ключевая фраза: %s. Найдено %i совпадений.' % (w, count))
         self._log('Найдено %i/%i.' % (found, len(self.words_list)))
+        self.result[url]['Найдено всего'] = '%i/%i' % (found, len(self.words_list))
       else:
         self._log('Страница не загружена. %s' % page)
         self.result[url] = page
     self.progress = 100.0
     self._log('Работа завершена. Время начала: %s' % time.asctime())
+    self.stoptime(time.acstime())
     self.completed = True
 
 
