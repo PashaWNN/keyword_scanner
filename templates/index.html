@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% block body %}
+<div class=blockcontainer>
+  <div class=block>
+    <h4>Загрузить задание</h4><br>
+    <form action="{{ url_for('add_task') }}" enctype="multipart/form-data" method=post>
+      <p>Файл с ключами:</p>
+      <p><input required type="file" name=file /></p>
+      <p>Ссылка на sitemap.xml:</p>
+      <p><input required type="text" name="link"/></p>
+      <p><input type="submit" value="Добавить задание" /></p>
+    </form>
+  </div>
+  <div class=block>
+    <h4>Очередь заданий</h4>
+    <ul>
+      {% for task in tasks %}
+        <div class="task {{ task.get_state() }}">
+          <li><a href="{{ url_for('show_task', id=task.threadID) }}">Задание {{ task.threadID }}</a> {{ task.get_progress() }}% - {{ task.link }}</li>
+        </div>
+      {% endfor %}
+    </ul>
+  </div>
+</div>
+<br>
+
+{% endblock %}

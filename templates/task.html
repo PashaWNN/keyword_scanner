@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+{% block body %}
+<div class=blockcontainer>
+  <div class=block>
+    <p>Лог работы(последние 25 сообщений):</p>
+    <textarea readonly>{{ task.get_log() }}</textarea>
+  </div>
+  <div class=block>
+    <p>Задание #{{ task.threadID }}</p>
+    <p>Статус: {{ task.get_state(h=True) }}</p>
+    {% if task.completed %}
+      <a href="{{ url_for('gen_csv', id=task.threadID) }}">Скачать отчёт в формате CSV</a>
+      <a href="{{ url_for('delete', id=task.threadID) }}">Удалить задание</a>
+    {% else %}
+      <a href="{{ url_for('stop_task', id=task.threadID) }}">Остановить досрочно</a>
+    {% endif %}
+  </div>
+</div>
+<br>
+<form action="{{ url_for('logout') }}" class=login>
+<input type=submit value="Выйти" class="redbtn" />
+</form>
+{% endblock %}

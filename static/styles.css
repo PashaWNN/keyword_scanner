@@ -1,0 +1,87 @@
+/* Bordered form */
+.login {
+    border: 3px solid #f1f1f1;
+    padding: 2%;
+}
+
+dl {
+    margin-bottom: 0px;
+}
+
+p {
+    margin: 0px;
+}
+
+.task {
+  border: 1px solid black;
+  background-color: #fdfdfd;
+}
+
+.error {
+  background-color: #ff9292;
+}
+
+textarea {
+  width: 100%;
+  height: 100%;
+}
+
+.completed {
+  background-color: #cfffac;
+}
+
+ul.flashes { 
+    background: aliceblue;
+    border: black 1px;
+    border-radius: 10px;
+    /* height: 30px; */
+    font-family: sans-serif;
+    align-content: center;
+    /* background-color: white; */
+    box-shadow: 4px 4px 9px 0px #0000000d;
+}
+/* Full-width inputs */
+input[type=text], input[type=password] {
+    padding: 12px 20px;
+    margin: 8px 0;
+    display: inline-block;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+/* Set a style for all buttons */
+input[type=submit] {
+    background-color: #4CAF50;
+    color: white;
+    padding: 14px 20px;
+    margin: 8px 0;
+    border: none;
+}
+input[type=submit].redbtn {
+    background-color: #e65c5c;
+}
+
+/* Add a hover effect for buttons */
+input[type=submit]:hover {
+    opacity: 0.8;
+}
+
+div.blockcontainer {
+
+    margin: 0 auto;
+    width: 95%;
+    text-align:  center;
+    display: flex;
+}
+div.block {
+    display: inline-block;
+    padding: 10px;
+    background: #f7fff7;
+    text-align: center;
+    border-radius: 9px;
+    height: 300px;
+    width: 45%;
+    box-shadow: 2px 2px 5px #dcd2d2;
+    margin: 0px 5px 0px 5px;
+}
+
