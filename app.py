@@ -138,7 +138,7 @@ def gen_csv(id):
     else:
       csv += 'Ничего не найдено;\n'
   return Response(
-    csv,
+    csv.encode('cp1251'),
     mimetype="text/csv",
     headers={"Content-disposition":
              "attachment; filename=report.csv"}
