@@ -133,13 +133,12 @@ def gen_csv(id):
   csv += 'Время начала;%s\nВремя окончания;%s\n' % (start, stop)
   csv += 'Карта сайта;%s\n;\n' % link
   for i in l:
-    csv += '\n\nФраза;%s\n' % i[0].strip()
-    csv += 'Страница;Количество\n'
+    csv += '\n%s;;\n' % i[0].strip()
     if len(i[1])>0:
       for j in i[1]:
-        csv += '%s;%s\n' % (j[0].strip(), j[1])
+        csv += ';%s;%s\n' % (j[0].strip(), j[1])
     else:
-      csv += 'Вхождений на сайте не найдено!;\n'
+      csv += ';Вхождений на сайте не найдено!;\n'
   return Response(
     csv.encode('cp1251'),
     mimetype="text/csv",

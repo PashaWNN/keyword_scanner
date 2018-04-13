@@ -35,7 +35,7 @@ def write_csv(fn, data):
 
 def make_regex(s):
   s = re.sub(r'\+', '', s)
-  lst = s.split(' ')
+  lst = re.split(r'[ -]', s)
   res = ''
   for s in lst:
     reg = '('
