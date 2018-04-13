@@ -140,7 +140,7 @@ def gen_csv(id):
     else:
       csv += ';Вхождений на сайте не найдено!;\n'
   return Response(
-    csv.encode('cp1251'),
+    csv,#.encode('cp1251'),
     mimetype="text/csv",
     headers={"Content-disposition":
              "attachment; filename=report.csv"}
