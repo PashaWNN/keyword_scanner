@@ -44,6 +44,8 @@ def make_regex(s):
     reg += ')'
     reg = re.sub(r'\|\)', ')', reg)
     res += reg + ' '
+  res = res.strip()
+  res = re.sub(r' ', '[ -]', res)
   return res
 
 
