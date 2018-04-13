@@ -140,7 +140,7 @@ class ParsingThread(Thread):
     self.progress = 100.0
     self.completed = True
     self.stopped = True
-    self._log('Работа завершена. Время начала: %s' % time.asctime())
+    self._log('Работа завершена. Время начала: %s' % self.starttime)
     self.stoptime = time.asctime()
 
 
