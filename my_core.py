@@ -80,7 +80,7 @@ def count_occurences(string, page):
   reg = make_regex(string.strip())
   debug('Создаём регулярное выражение для "%s"\n%s' % (string, reg))
   text = strip_html(page)
-  return len(re.findall(reg, page, flags=re.IGNORECASE))
+  return re.findall(reg, page, flags=re.IGNORECASE)
 
 
 def debug(s):
@@ -126,12 +126,13 @@ class ParsingThread(Thread):
       found = 0
       if not re.findall(r'^Ошибка.+$', page):
         for w in self.words_list:
-          count = count_occurences(w, page)
+          occs = count_occurences(w, page)
+          count = len(occs)
           if count>0:
             self.result[url][w] = count
             found+=1
             sov = sovp.make_agree_with_number(count).word
-            self._log('Ключевая фраза: %s. Найдено %i %s.' % (w, count, sov))
+            self._log('Ключевая фраза: %s. Найдено %i %s: %s.' % (w, count, sov, occs))
         self._log('Найдено %i/%i.' % (found, len(self.words_list)))
       else:
         self._log('Страница не загружена. %s' % page)
