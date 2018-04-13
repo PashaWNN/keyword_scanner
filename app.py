@@ -116,10 +116,13 @@ def delete(id):
 
 @app.route('/generate_csv/<int:id>')
 def gen_csv(id):
+#
+# result [ (word, [ link, count ]) ]
+#
   if not 'authorized' in session:
     return redirect('/')
   try:
-    d = tasks[id].result
+    l = tasks[id].result
     start = tasks[id].starttime
     stop = tasks[id].stoptime
     link = tasks[id].link
@@ -129,14 +132,14 @@ def gen_csv(id):
   csv = ''
   csv += 'Время начала;%s\nВремя окончания;%s\n' % (start, stop)
   csv += 'Карта сайта;%s\n;\n' % link
-  for page, words in d.items():
-    csv += 'Страница;%s\n' % page
-    csv += 'Фраза;Количество\n'
-    if len(words)>0:
-      for s, c in words.items():
-        csv += '%s;%s\n' % (s.strip(), c)
+  for i in l:
+    csv += '\n\nФраза;%s\n' % i[0].strip()
+    csv += 'Страница;Количество\n'
+    if len(i[1])>0:
+      for j in i[1]:
+        csv += '%s;%s\n' % (j[0].strip(), j[1])
     else:
-      csv += 'Ничего не найдено;\n'
+      csv += 'Вхождений на сайте не найдено!;\n'
   return Response(
     csv.encode('cp1251'),
     mimetype="text/csv",

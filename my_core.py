@@ -109,34 +109,43 @@ class ParsingThread(Thread):
   def run(self):
     self.starttime = time.asctime()
     self._log('Поток запущен')
-    self.result = {}
+    self.result = []
     self.url_list = parse_sitemap(self.link)
-    self._log('Завершён разбор sitemap, ссылки получены')
+    self._log('Завершён разбор sitemap, ссылки получены.')
+    self._log('Начинаю загрузку страниц.')
+    self.pages = []
     for i, url in enumerate(self.url_list):
       while self.paused:
         pass
       if self.stopped:
         self.stoptime = time.asctime()
         return
-      self._log('Ссылка №%i - адрес %s' % (i, url))
       sleep(randint(LOADING_DELAY_MIN, LOADING_DELAY_MAX))
-      self.result[url] = {}
+      self.pages.append((url, load_page(url)))
+      self._log('Загружена страница %s' % url)
       self.progress = (i/len(self.url_list)) * 100
-      page = load_page(url)
+    self._log('Страницы загружены.')
+    for i, w in enumerate(self.words_list):
+      while self.paused:
+        pass
+      if self.stopped:
+        self.stoptime = time.asctime()
+        return
+      self._log('Фраза №%i - "%s"' % (i, w))
       found = 0
-      if not re.findall(r'^Ошибка.+$', page):
-        for w in self.words_list:
-          occs = count_occurences(w, page)
+      occurences = (w, [])
+      for p in self.pages:
+        if not re.findall(r'^Ошибка.+$', p[1]):
+          occs = count_occurences(w, p[1])
           count = len(occs)
           if count>0:
-            self.result[url][w] = count
             found+=1
             sov = sovp.make_agree_with_number(count).word
             self._log('Ключевая фраза: %s. Найдено %i %s: %s.' % (w, count, sov, occs))
-        self._log('Найдено %i/%i.' % (found, len(self.words_list)))
-      else:
-        self._log('Страница не загружена. %s' % page)
-        self.result[url] = page
+            occurences[1].append((p[0], count))
+        else:
+          self._log('Страница не загружена. %s' % p[0])
+      self.result.append(occurences)
     self.progress = 100.0
     self.completed = True
     self.stopped = True
