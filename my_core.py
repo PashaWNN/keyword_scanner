@@ -1,4 +1,3 @@
-#!/usr/bin/python3
 import re, pymorphy2
 from threading import Thread
 from time import sleep
@@ -7,6 +6,7 @@ from random import seed, choice, randint
 from json import dump
 import csv
 import time
+
 
 m = pymorphy2.MorphAnalyzer()
 sovp = m.parse('совпадение')[0]
@@ -23,6 +23,7 @@ def parse_csv(f):
   for row in csv.reader(f, delimiter=';'):
     res.append(row)
   return res
+
 
 def parse_sitemap(link):
   text = load_page(link)
@@ -103,11 +104,15 @@ class ParsingThread(Thread):
     self._log('Создан поток')
     self.paused = False
     self.stopped = False
+
+
   def _log(self, s):
     t = time.asctime()
     self._log_s.append('[%s] %s\n' % (t, s))
     if len(self._log_s) > 25:
       self._log_s.pop(0)
+
+
   def run(self):
     self.starttime = time.asctime()
     self._log('Поток запущен')
@@ -158,8 +163,10 @@ class ParsingThread(Thread):
   def get_progress(self):
     return '%.2f' % self.progress
 
+
   def get_error(self):
     return ''
+
 
   def get_log(self):
     s = ''
@@ -167,19 +174,23 @@ class ParsingThread(Thread):
       s+=line
     return s
 
+
   def pause(self):
     self._log('Поток остановлен.')
     self.paused = True
 
+
   def resume(self):
     self._log('Возобновление...')
     self.paused = False
+
 
   def stop(self):
     self._log('Преждевременная остановка.')
     self.stoptime = time.asctime()
     self.completed = True
     self.stopped = True
+
 
   def get_state(self, h=False):
     if self.completed:
@@ -188,6 +199,8 @@ class ParsingThread(Thread):
       return 'Ошибка' if h else 'error'
     else:
       return 'Запущено' if h else 'running'
+
+
 
 def save_json(pt, fn):
   with open(fn, 'w') as f:

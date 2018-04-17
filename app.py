@@ -13,7 +13,9 @@ import csv
 
 ERR_WRONG_ID = 'Ошибка: задание с таким ID не найдено!'
 
-tasks = []
+
+tasks = {}
+
 
 # Initialization
 app = Flask(__name__)
@@ -68,6 +70,7 @@ def logout():
   flash('Вы вышли из системы.')
   return redirect('/')
 
+
 @app.route('/add_task', methods=['GET', 'POST'])
 def add_task():
   global tasks
@@ -87,10 +90,11 @@ def add_task():
     if not link:
       flash('Необходимо ввести ссылку на карту сайта!')
       return redirect('/')
-    pt = ParsingThread(len(tasks), link, words)
+    num = len(tasks) if not len(tasks) in tasks else len(tasks)+1
+    pt = ParsingThread(num, link, words)
     pt.start()
-    tasks.append(pt)
-    flash('Задание #%i успешно добавлено.' % len(tasks))  
+    tasks[num] = pt
+    flash('Задание #%i успешно добавлено.' % num)  
   return redirect('/')
 
 @app.route('/stop/<int:id>')
@@ -113,6 +117,7 @@ def delete(id):
   except IndexError:
     flash(ERR_WRONG_ID)
     return redirect('/')
+
 
 @app.route('/generate_csv/<int:id>')
 def gen_csv(id):
@@ -140,7 +145,7 @@ def gen_csv(id):
     else:
       csv += ';Вхождений на сайте не найдено!;\n'
   return Response(
-    csv,#.encode('cp1251'),
+    csv.encode('cp1251', errors='replace'),
     mimetype="text/csv",
     headers={"Content-disposition":
              "attachment; filename=report.csv"}
@@ -155,7 +160,7 @@ def show_task(id):
   try:
     task = tasks[id]
     return render_template('task.html', task=task, title=APP_NAME, logged_in=('authorized' in session))
-  except IndexError:
+  except KeyError:
     flash('Ошибка: задание с таким ID не найдено!')
     return redirect('/')
 

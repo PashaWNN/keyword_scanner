@@ -14,9 +14,9 @@
   <div class=block>
     <h4>Очередь заданий</h4>
     <ul>
-      {% for task in tasks %}
-        <div class="task {{ task.get_state() }}">
-          <li><a href="{{ url_for('show_task', id=task.threadID) }}">Задание {{ task.threadID }}</a> {{ task.get_progress() }}% - {{ task.link }}</li>
+      {% for t in tasks %}
+        <div class="task {{ tasks[t].get_state() }}">
+          <li><a href="{{ url_for('show_task', id=tasks[t].threadID) }}">Задание {{ tasks[t].threadID }}</a> {{ tasks[t].get_progress() }}% - {{ tasks[t].link }}</li>
         </div>
       {% endfor %}
     </ul>
