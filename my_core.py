@@ -98,7 +98,7 @@ class ParsingThread(Thread):
     self.threadID = threadID
     self.words_list = words_list
     self.progress = 0
-    self.link = link
+    self.link = link.strip()
     self.completed = False
     self._log_s = []
     self._log('Создан поток')
