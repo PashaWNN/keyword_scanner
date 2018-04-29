@@ -4,6 +4,7 @@ from time import sleep
 from requests import get as rget
 from random import seed, choice, randint
 from json import dump
+from config import BLACKLIST_FILE
 import csv
 import time
 
@@ -14,8 +15,13 @@ LOADING_DELAY_MIN = 3
 LOADING_DELAY_MAX = 5
 seed()
 
-dbg = ''
-DEBUG=True
+blacklist = []
+try:
+  with open(BLACKLIST_FILE, 'r') as f:
+    blacklist = f.read().split('\n')
+except FileNotFoundError:
+  with open(BLACKLIST_FILE, 'w') as f:
+    f.write('')
 
 
 def parse_csv(f):
@@ -30,10 +36,6 @@ def parse_sitemap(link):
   return re.findall(r'<loc>(.+)<\/loc>', text)
 
 
-def write_csv(fn, data):
-  pass
-
-
 def make_regex(s):
   s = re.sub(r'\+', '', s)
   lst = re.split(r'[ -]', s)
@@ -43,6 +45,8 @@ def make_regex(s):
     for p in m.parse(s)[0].lexeme:
       reg += p.word + '|'
     reg += ')'
+    if s in blacklist:
+      reg += '?'
     reg = re.sub(r'\|\)', ')', reg)
     res += reg + ' '
   res = res.strip()
@@ -86,12 +90,6 @@ def count_occurences(string, page):
   return re.findall(reg, page, flags=re.IGNORECASE)
 
 
-def debug(s):
-  global dbg
-  if DEBUG:
-    dbg+=s+'\n'
-
-
 class ParsingThread(Thread):
   def __init__(self, threadID, link, words_list):
     Thread.__init__(self)
@@ -101,7 +99,7 @@ class ParsingThread(Thread):
     self.link = link
     self.completed = False
     self._log_s = []
-    self._log('Создан поток')
+    self._log('Создан поток.\n')
     self.paused = False
     self.stopped = False
 
@@ -109,7 +107,7 @@ class ParsingThread(Thread):
   def _log(self, s):
     t = time.asctime()
     self._log_s.append('[%s] %s\n' % (t, s))
-    if len(self._log_s) > 25:
+    if len(self._log_s) > 1000:#25:
       self._log_s.pop(0)
 
 
@@ -175,16 +173,6 @@ class ParsingThread(Thread):
     return s
 
 
-  def pause(self):
-    self._log('Поток остановлен.')
-    self.paused = True
-
-
-  def resume(self):
-    self._log('Возобновление...')
-    self.paused = False
-
-
   def stop(self):
     self._log('Преждевременная остановка.')
     self.stoptime = time.asctime()
@@ -199,11 +187,5 @@ class ParsingThread(Thread):
       return 'Ошибка' if h else 'error'
     else:
       return 'Запущено' if h else 'running'
-
-
-
-def save_json(pt, fn):
-  with open(fn, 'w') as f:
-    dump(pt.result, f)
 
 
