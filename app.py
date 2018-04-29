@@ -6,7 +6,17 @@ from flask import *
 from my_core import *
 from config import *
 import csv
+import functools
 
+
+def wcontext(app):
+    def inner(func):
+        @functools.wraps(func)
+        def wrapper(*args, **kwargs):
+            with app.app_context():
+                return func(*args, **kwargs)
+        return wrapper
+    return inner
 
 # Configuration
 # Все настройки хранятся в файле ./config.py
@@ -72,6 +82,7 @@ def logout():
 
 
 @app.route('/add_task', methods=['GET', 'POST'])
+@wcontext(app)
 def add_task():
   global tasks
   if len(tasks)>=MAX_TASKS:
@@ -98,6 +109,7 @@ def add_task():
   return redirect('/')
 
 @app.route('/stop/<int:id>')
+@wcontext(app)
 def stop_task(id):
   if not 'authorized' in session:
     return redirect('/')
@@ -110,6 +122,7 @@ def stop_task(id):
 
   
 @app.route('/del_task/<int:id>')
+@wcontext(app)
 def delete(id):
   try:
     del tasks[id]
@@ -120,6 +133,7 @@ def delete(id):
 
 
 @app.route('/generate_csv/<int:id>')
+@wcontext(app)
 def gen_csv(id):
 #
 # result [ (word, [ link, count ]) ]
@@ -154,6 +168,7 @@ def gen_csv(id):
   
 
 @app.route('/task/<int:id>')
+@wcontext(app)
 def show_task(id):
   if not 'authorized' in session:
     return redirect('/')
