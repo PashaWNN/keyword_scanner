@@ -12,11 +12,20 @@
     <p>Статус: {{ task.get_state(h=True) }}</p>
     {% if task.completed %}
       <a href="{{ url_for('gen_csv', id=task.threadID) }}">Скачать отчёт в формате CSV</a>
+      <a href="{{ url_for('get_log', id=task.threadID) }}">Скачать полный отчёт обработки.</a>
       <a href="{{ url_for('delete', id=task.threadID) }}">Удалить задание</a>
     {% else %}
       <a href="{{ url_for('stop_task', id=task.threadID) }}">Остановить досрочно</a>
     {% endif %}
   </div>
 </div>
+<script type="text/javascript">
+        function autoRefreshPage()
+            {
+                console.log("autoRefreshPage()");
+                location.reload(true);
+            }
+        setInterval('autoRefreshPage()', 5000);
+</script>
 <br>
 {% endblock %}

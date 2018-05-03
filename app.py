@@ -75,30 +75,41 @@ def settings():
   return render_template('settings.html', title=APP_NAME)
 
 
+@app.route('/add')
+def add():
+  if not 'authorized' in session:
+    return redirect('/')
+  return render_template('add.html', title=APP_NAME)
+
+
 @app.route('/add_task', methods=['GET', 'POST'])
 def add_task():
+  def load(f):
+    if request.method == 'POST':
+      if not f:
+        flash('Необходимо прикрепить текстовый файл с ключевыми словами!')
+        return redirect('/')
+      stream = io.StringIO(f.stream.read().decode("utf-8"), newline=None)
+      words = []
+      for line in stream:
+        words.append(line.strip())
+    return words
   global tasks
   if len(tasks)>=MAX_TASKS:
     flash('Ошибка: превышен лимит заданий. Очистите очередь заданий и повторите попытку.')
     return redirect('/')
-  if request.method == 'POST':
-    f = request.files['file']
-    if not f:
-      flash('Необходимо прикрепить текстовый файл с ключевыми словами!')
-      return redirect('/')
-    stream = io.StringIO(f.stream.read().decode("utf-8"), newline=None)
-    words = []
-    for line in stream:
-      words.append(line)
-    link = request.form['link']
-    if not link:
-      flash('Необходимо ввести ссылку на карту сайта!')
-      return redirect('/')
-    num = len(tasks) if not len(tasks) in tasks else len(tasks)+1
-    pt = ParsingThread(num, link, words)
-    pt.start()
-    tasks[num] = pt
-    flash('Задание #%i успешно добавлено.' % num)  
+  sm_method = request.form['sitemap']
+  keys_method = request.form['keymethod']
+  keys_data = load(request.files['file']) if (keys_method == 'file') else request.form['keys'].split('\r\n')
+  sm_data = request.form['link'] if (sm_method == 'link') else request.form['links'].split('\r\n')
+  if not (sm_data and keys_data):
+    flash('Форма заполнена неправильно.')
+    return redirect('/')
+  num = len(tasks) if not len(tasks) in tasks else len(tasks)+1
+  pt = ParsingThread(num, sm_data, keys_data)
+  pt.start()
+  tasks[num] = pt
+  flash('Задание #%i успешно добавлено.' % num)  
   return redirect('/')
 
 
@@ -123,11 +134,27 @@ def delete(id):
     flash(ERR_WRONG_ID)
     return redirect('/')
 
+@app.route('/download_log/<int:id>')
+def get_log(id):
+  if not 'authorized' in session:
+    return redirect('/')
+  try:
+    log = tasks[id].get_log(full=True)
+  except IndexError:
+    flash('Нет задания с таким ID!')
+    return redirect('/')
+  return Response(
+    log.encode('cp1251', errors='replace'),
+    mimetype="text/txt",
+    headers={"Content-disposition":
+             "attachment; filename=log%i.txt" % id}
+  )
+
 
 @app.route('/generate_csv/<int:id>')
 def gen_csv(id):
 #
-# result [ (word, [ link, count ]) ]
+# result [ (word, [ link, { occurence: count } ]) ]
 #
   if not 'authorized' in session:
     return redirect('/')
@@ -135,18 +162,18 @@ def gen_csv(id):
     l = tasks[id].result
     start = tasks[id].starttime
     stop = tasks[id].stoptime
-    link = tasks[id].link
   except IndexError:
     flash('Ошибка создания CSV')
     return redirect('/')
   csv = ''
-  csv += 'Время начала;%s\nВремя окончания;%s\n' % (start, stop)
-  csv += 'Карта сайта;%s\n;\n' % link
-  for i in l:
-    csv += '\n%s;;\n' % i[0].strip()
-    if len(i[1])>0:
-      for j in i[1]:
-        csv += ';%s;%s\n' % (j[0].strip(), j[1])
+  csv += 'Время начала;%s\nВремя окончания;%s\n\n' % (start, stop)
+  for result in l:
+    csv += '\n%s;;\n' % result[0].strip()
+    if len(result[1])>0:
+      for link in result[1]:
+        csv += ';%s:;\n' % (link[0].strip())
+        for occurence in link[1]:
+          csv +=';;%s;%i\n' % (occurence, link[1][occurence])
     else:
       csv += ';Вхождений на сайте не найдено!;\n'
   return Response(
@@ -158,7 +185,6 @@ def gen_csv(id):
   
 
 @app.route('/task/<int:id>')
-@wcontext(app)
 def show_task(id):
   if not 'authorized' in session:
     return redirect('/')

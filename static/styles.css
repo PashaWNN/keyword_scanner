@@ -84,4 +84,7 @@ div.block {
     box-shadow: 2px 2px 5px #dcd2d2;
     margin: 0px 5px 0px 5px;
 }
-
+div.wide {
+  width: 95%;
+  height: auto;
+}

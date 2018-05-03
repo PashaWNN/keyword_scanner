@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block body %}
+<div class=blockcontainer>
+  <div class="block wide">
+    <h4>Загрузить задание</h4><br>
+    <form action="{{ url_for('add_task') }}" enctype="multipart/form-data" method=post>
+      <input type=radio id=keyfile name=keymethod value=file checked>      
+      <label for=keyfile>Файл с ключами:</label>
+      <p><input type="file" name=file /></p>
+      <input type=radio id=keystring name=keymethod value=string>
+      <label for=keystring>Указать ключи вручную:</label>
+      <textarea name=keys></textarea>
+      <input type=radio id=linkssm name=sitemap value=link checked>
+      <label for=linkssm>Ссылка на sitemap.xml:</label>
+      <p><input type="text" name="link"/></p>
+      <input type=radio id=linkstxt name=sitemap value=string>
+      <label for=linkstxt>Указать страницы вручную:</label>
+      <textarea name=links></textarea>
+      <p><input type="submit" value="Добавить задание" /></p>
+    </form>
+  </div>
+</div>
+<br>
+
+{% endblock %}

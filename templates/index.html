@@ -3,11 +3,7 @@
 <div class=blockcontainer>
   <div class=block>
     <h4>Загрузить задание</h4><br>
-    <form action="{{ url_for('add_task') }}" enctype="multipart/form-data" method=post>
-      <p>Файл с ключами:</p>
-      <p><input required type="file" name=file /></p>
-      <p>Ссылка на sitemap.xml:</p>
-      <p><input required type="text" name="link"/></p>
+    <form action="{{ url_for('add') }}" method="get">
       <p><input type="submit" value="Добавить задание" /></p>
     </form>
   </div>
@@ -23,5 +19,12 @@
   </div>
 </div>
 <br>
-
+<script type="text/javascript">
+        function autoRefreshPage()
+            {
+                console.log("autoRefreshPage()");
+                location.reload(true);
+            }
+        setInterval('autoRefreshPage()', 5000);
+</script>
 {% endblock %}

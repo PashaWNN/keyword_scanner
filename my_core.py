@@ -51,6 +51,7 @@ def make_regex(s):
     res += reg + ' '
   res = res.strip()
   res = re.sub(r' ', '[ -]', res)
+  res = re.sub(r'[Ёё]', '[её]', res)
   return res
 
 
@@ -85,7 +86,6 @@ def strip_html(h):
 
 def count_occurences(string, page):
   reg = make_regex(string.strip())
-  debug('Создаём регулярное выражение для "%s"\n%s' % (string, reg))
   text = strip_html(page)
   return re.findall(reg, page, flags=re.IGNORECASE)
 
@@ -96,7 +96,7 @@ class ParsingThread(Thread):
     self.threadID = threadID
     self.words_list = words_list
     self.progress = 0
-    self.link = link.strip()
+    self.link = link if isinstance(link, list) else link.strip()
     self.completed = False
     self._log_s = []
     self._log('Создан поток.\n')
@@ -107,15 +107,17 @@ class ParsingThread(Thread):
   def _log(self, s):
     t = time.asctime()
     self._log_s.append('[%s] %s\n' % (t, s))
-    if len(self._log_s) > 1000:#25:
-      self._log_s.pop(0)
 
 
   def run(self):
     self.starttime = time.asctime()
     self._log('Поток запущен')
     self.result = []
-    self.url_list = parse_sitemap(self.link)
+    if isinstance(self.link, list):
+      self._log('Ссылки готовы к обработке.')
+      self.url_list = self.link
+    else:
+      self.url_list = parse_sitemap(self.link)
     self._log('Завершён разбор sitemap, ссылки получены.')
     self._log('Начинаю загрузку страниц.')
     self.pages = []
@@ -131,8 +133,6 @@ class ParsingThread(Thread):
       self.progress = (i/len(self.url_list)) * 100
     self._log('Страницы загружены.')
     for i, w in enumerate(self.words_list):
-      while self.paused:
-        pass
       if self.stopped:
         self.stoptime = time.asctime()
         return
@@ -143,11 +143,18 @@ class ParsingThread(Thread):
         if not re.findall(r'^Ошибка.+$', p[1]):
           occs = count_occurences(w, p[1])
           count = len(occs)
+          res = {}
           if count>0:
+            for oc in occs:
+              s = ' '.join(oc)
+              if not s in res:
+                res[s]=1
+              else:
+                res[s]+=1
             found+=1
             sov = sovp.make_agree_with_number(count).word
             self._log('Ключевая фраза: %s. Найдено %i %s: %s.' % (w, count, sov, occs))
-            occurences[1].append((p[0], count))
+            occurences[1].append((p[0], res))
         else:
           self._log('Страница не загружена. %s' % p[0])
       self.result.append(occurences)
@@ -166,10 +173,12 @@ class ParsingThread(Thread):
     return ''
 
 
-  def get_log(self):
+  def get_log(self, full=False):
     s = ''
     for line in self._log_s:
       s+=line
+    if not full:
+      s = s[25:]
     return s
 
 
