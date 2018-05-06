@@ -11,8 +11,8 @@
     <p>Прогресс: {{ task.get_progress() }}%</p>
     <p>Статус: {{ task.get_state(h=True) }}</p>
     {% if task.completed %}
-      <a href="{{ url_for('gen_csv', id=task.threadID) }}">Скачать отчёт в формате CSV</a>
-      <a href="{{ url_for('get_log', id=task.threadID) }}">Скачать полный отчёт обработки.</a>
+      <a href="{{ url_for('gen_csv', id=task.threadID) }}">Скачать отчёт в формате CSV</a><br>
+      <a href="{{ url_for('get_log', id=task.threadID) }}">Скачать полный отчёт обработки.</a><br>
       <a href="{{ url_for('delete', id=task.threadID) }}">Удалить задание</a>
     {% else %}
       <a href="{{ url_for('stop_task', id=task.threadID) }}">Остановить досрочно</a>

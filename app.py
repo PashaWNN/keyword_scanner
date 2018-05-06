@@ -134,6 +134,7 @@ def delete(id):
     flash(ERR_WRONG_ID)
     return redirect('/')
 
+
 @app.route('/download_log/<int:id>')
 def get_log(id):
   if not 'authorized' in session:

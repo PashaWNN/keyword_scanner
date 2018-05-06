@@ -9,14 +9,14 @@ import csv
 import time
 
 
-m = pymorphy2.MorphAnalyzer()
-sovp = m.parse('совпадение')[0]
-LOADING_DELAY_MIN = 3
-LOADING_DELAY_MAX = 5
-seed()
+m = pymorphy2.MorphAnalyzer()   # Инициализация библиотеки для работы со словами
+sovp = m.parse('совпадение')[0] # Подготовка слова "совпадение" для склонения по числам
+LOADING_DELAY_MIN = 3           # Минимальная задержка между загрузкой страниц, в секундах
+LOADING_DELAY_MAX = 5           # Максимальная... 
+seed()                          # Инициализация генератора сл. ч.
 
 blacklist = []
-try:
+try:                            # Загрузка списка слов, которые не учитываются при поиске
   with open(BLACKLIST_FILE, 'r') as f:
     blacklist = f.read().split('\n')
 except FileNotFoundError:
@@ -24,21 +24,27 @@ except FileNotFoundError:
     f.write('')
 
 
-def parse_csv(f):
-  res = []
-  for row in csv.reader(f, delimiter=';'):
-    res.append(row)
-  return res
-
-
-def parse_sitemap(link):
+def parse_sitemap(link):   # Вытаскивание ссылок из XML Sitemap
   text = load_page(link)
   return re.findall(r'<loc>(.+)<\/loc>', text)
 
 
-def make_regex(s):
+def make_regex(s, preserve_blacklisted=False): 
+"""
+Создаёт регулярное выражение для словосочетания
+Args:
+  s: словосочетание
+Kwargs:
+  preserve_blacklisted: сохранять слова, включённые в blacklist[]
+Returns:
+  Регулярное выражение
+"""
   s = re.sub(r'\+', '', s)
-  lst = re.split(r'[ -]', s)
+  l = re.split(r'[ -]', s)
+  lst = []
+  for word in l:
+    if (not (word in blacklist)) or preserve_blacklisted:
+      lst.append(word)
   res = ''
   for s in lst:
     reg = '('
@@ -52,8 +58,10 @@ def make_regex(s):
   res = res.strip()
   res = re.sub(r' ', '[ -]', res)
   res = re.sub(r'[Ёё]', '[её]', res)
+  res +='[^А-Яа-яЁёA-Za-z]'
   return res
 
+blackregex = make_regex(blacklist, preserve_blacklisted=True) # Создание регулярного выражения для поиска слов из ч.с.
 
 def load_page(url):
   agents = [
@@ -70,16 +78,24 @@ def load_page(url):
       if 'text' in r.headers['content-type']:
         return r.text
       else:
-        return 'Ошибка: не страница HTML'
+        raise Exception('Ошибка: не страница HTML')
     else:
-      return 'Ошибка %i' % r.status_code
+      raise Exception('Ошибка %i' % r.status_code)
   except:
-    return 'Ошибка'
+    raise
 
 
 def strip_html(h):
+"""
+Обрезает из html-кода только значащий текст и убирает слова, входящие в ч.с.
+Args:
+  h: html-code
+Returns:
+  Обрезанный текст
+"""
   reg = r'(?:description" content="(.+)"|<title>(.+)<\/title>|<body>([\S\s]+)<\/body>)'
   res = re.findall(reg, h, flags=re.IGNORECASE)
+  res = re.sub(blackregex, '', res)
   if len(res)>0:
     return '\n\n'.join(res[0])
 
@@ -91,6 +107,7 @@ def count_occurences(string, page):
 
 
 class ParsingThread(Thread):
+
   def __init__(self, threadID, link, words_list):
     Thread.__init__(self)
     self.threadID = threadID
@@ -117,19 +134,24 @@ class ParsingThread(Thread):
       self._log('Ссылки готовы к обработке.')
       self.url_list = self.link
     else:
-      self.url_list = parse_sitemap(self.link)
-    self._log('Завершён разбор sitemap, ссылки получены.')
+      try:
+        self.url_list = parse_sitemap(self.link)
+        self._log('Завершён разбор sitemap, ссылки получены.')
+      except Exception as e:
+        self._log('Ошибка разбора карты сайта. %s' % e)
     self._log('Начинаю загрузку страниц.')
     self.pages = []
     for i, url in enumerate(self.url_list):
-      while self.paused:
-        pass
       if self.stopped:
         self.stoptime = time.asctime()
         return
       sleep(randint(LOADING_DELAY_MIN, LOADING_DELAY_MAX))
-      self.pages.append((url, load_page(url)))
-      self._log('Загружена страница %s' % url)
+      try:
+        self.pages.append((url, load_page(url)))
+        self._log('Загружена страница %s' % url)
+      except Exception as e:
+        self._log('Ошибка загрузки страницы %s' % url)
+        self._log(e)
       self.progress = (i/len(self.url_list)) * 100
     self._log('Страницы загружены.')
     for i, w in enumerate(self.words_list):
@@ -140,23 +162,19 @@ class ParsingThread(Thread):
       found = 0
       occurences = (w, [])
       for p in self.pages:
-        if not re.findall(r'^Ошибка.+$', p[1]):
-          occs = count_occurences(w, p[1])
-          count = len(occs)
-          res = {}
-          if count>0:
-            for oc in occs:
-              s = ' '.join(oc)
-              if not s in res:
-                res[s]=1
-              else:
-                res[s]+=1
-            found+=1
-            sov = sovp.make_agree_with_number(count).word
-            self._log('Ключевая фраза: %s. Найдено %i %s: %s.' % (w, count, sov, occs))
-            occurences[1].append((p[0], res))
-        else:
-          self._log('Страница не загружена. %s' % p[0])
+        occs = count_occurences(w, p[1])
+        count = len(occs)
+        res = {}
+        for oc in occs:
+          s = ' '.join(oc)
+          if not s in res:
+            res[s]=1
+          else:
+            res[s]+=1
+        found+=1
+        sov = sovp.make_agree_with_number(count).word
+        self._log('Ключевая фраза: %s. Найдено %i %s: %s.' % (w, count, sov, occs))
+        occurences[1].append((p[0], res))
       self.result.append(occurences)
     self.progress = 100.0
     self.completed = True
