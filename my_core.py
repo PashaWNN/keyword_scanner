@@ -30,15 +30,15 @@ def parse_sitemap(link):   # Вытаскивание ссылок из XML Site
 
 
 def make_regex(s, preserve_blacklisted=False): 
-"""
-Создаёт регулярное выражение для словосочетания
-Args:
-  s: словосочетание
-Kwargs:
-  preserve_blacklisted: сохранять слова, включённые в blacklist[]
-Returns:
-  Регулярное выражение
-"""
+  """
+  Создаёт регулярное выражение для словосочетания
+  Args:
+    s: словосочетание
+  Kwargs:
+    preserve_blacklisted: сохранять слова, включённые в blacklist[]
+  Returns:
+    Регулярное выражение
+  """
   s = re.sub(r'\+', '', s)
   l = re.split(r'[ -]', s)
   lst = []
@@ -86,13 +86,13 @@ def load_page(url):
 
 
 def strip_html(h):
-"""
-Обрезает из html-кода только значащий текст и убирает слова, входящие в ч.с.
-Args:
-  h: html-code
-Returns:
-  Обрезанный текст
-"""
+  """
+  Обрезает из html-кода только значащий текст и убирает слова, входящие в ч.с.
+  Args:
+    h: html-code
+  Returns:
+    Обрезанный текст
+  """
   reg = r'(?:description" content="(.+)"|<title>(.+)<\/title>|<body>([\S\s]+)<\/body>)'
   res = re.findall(reg, h, flags=re.IGNORECASE)
   res = re.sub(blackregex, '', res)
