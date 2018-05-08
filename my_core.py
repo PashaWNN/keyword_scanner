@@ -61,7 +61,6 @@ def make_regex(s, preserve_blacklisted=False):
   res +='[^А-Яа-яЁёA-Za-z]'
   return res
 
-blackregex = '(?:%s)' % '|'.join(blacklist) # Создание регулярного выражения для поиска слов из ч.с.
 
 def load_page(url):
   agents = [
@@ -95,7 +94,8 @@ def strip_html(h):
   """
   reg = r'(?:description" content="(.+)"|<title>(.+)<\/title>|<body>([\S\s]+)<\/body>)'
   res = re.findall(reg, h, flags=re.IGNORECASE)
-  res = re.sub(blackregex, '', res)
+  br = '(?:%s)' % '|'.join(blacklist)
+  res = re.sub(br, '', res)
   if len(res)>0:
     return '\n\n'.join(res[0])
 
