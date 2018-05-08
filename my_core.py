@@ -193,10 +193,9 @@ class ParsingThread(Thread):
 
   def get_log(self, full=False):
     s = ''
-    for line in self._log_s:
+    lg = self._log_s if full else list(self._log_s[-25:])
+    for line in lg:
       s+=line
-    if not full:
-      s = s[-25:]
     return s
 
 
