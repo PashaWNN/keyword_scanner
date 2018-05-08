@@ -123,7 +123,7 @@ class ParsingThread(Thread):
 
   def _log(self, s):
     t = time.asctime()
-    self._log_s.append('[%s] %s\n' % (t, s))
+    self._log_s.append('[%s] %s\r\n' % (t, s))
 
 
   def run(self):
