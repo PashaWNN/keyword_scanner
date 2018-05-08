@@ -40,7 +40,7 @@ def make_regex(s, preserve_blacklisted=False):
     Регулярное выражение
   """
   s = re.sub(r'\+', '', s)
-  l = re.split(r'[ -]', s)
+  l = re.split(r'[ -]+', s)
   lst = []
   for word in l:
     if (not (word in blacklist)) or preserve_blacklisted:
