@@ -61,7 +61,7 @@ def make_regex(s, preserve_blacklisted=False):
   res +='[^А-Яа-яЁёA-Za-z]'
   return res
 
-blackregex = make_regex(blacklist, preserve_blacklisted=True) # Создание регулярного выражения для поиска слов из ч.с.
+blackregex = '(?:%s)' % '|'.join(blacklist) # Создание регулярного выражения для поиска слов из ч.с.
 
 def load_page(url):
   agents = [
