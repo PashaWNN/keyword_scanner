@@ -172,9 +172,10 @@ def gen_csv(id):
     csv += '\n%s;;\n' % result[0].strip()
     if len(result[1])>0:
       for link in result[1]:
-        csv += ';%s:;\n' % (link[0].strip())
-        for occurence in link[1]:
-          csv +=';;%s;%i\n' % (occurence, link[1][occurence])
+        if len(link[1])>0:
+          csv += ';%s;\n' % (link[0].strip())
+          for occurence in link[1]:
+            csv +=';;%s;%i\n' % (occurence, link[1][occurence])
     else:
       csv += ';Вхождений на сайте не найдено!;\n'
   return Response(
