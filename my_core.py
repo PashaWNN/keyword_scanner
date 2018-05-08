@@ -196,7 +196,7 @@ class ParsingThread(Thread):
     for line in self._log_s:
       s+=line
     if not full:
-      s = s[25:]
+      s = s[-25:]
     return s
 
 
