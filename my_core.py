@@ -29,7 +29,7 @@ def parse_sitemap(link):   # Вытаскивание ссылок из XML Site
   return re.findall(r'<loc>(.+)<\/loc>', text)
 
 
-def make_regex(s, preserve_blacklisted=False): 
+def make_regex(s): 
   """
   Создаёт регулярное выражение для словосочетания
   Args:
@@ -43,7 +43,7 @@ def make_regex(s, preserve_blacklisted=False):
   l = re.split(r'[ -]+', s)
   lst = []
   for word in l:
-    if (not (word in blacklist)) or preserve_blacklisted:
+    if not (word in blacklist):
       lst.append(word)
   res = ''
   for s in lst:
@@ -56,7 +56,8 @@ def make_regex(s, preserve_blacklisted=False):
     reg = re.sub(r'\|\)', ')', reg)
     res += reg + ' '
   res = res.strip()
-  res = re.sub(r' ', '[ -]', res)
+  bl = '|'.join(blacklist)
+  res = re.sub(r' ', '[ -](?:(%s)[ -])?' % bl, res)
   res = re.sub(r'[Ёё]', '[её]', res)
   res +='[^А-Яа-яЁёA-Za-z]'
   return res
@@ -94,8 +95,8 @@ def strip_html(h):
   """
   reg = r'(?:description" content="(.+)"|<title>(.+)<\/title>|<body>([\S\s]+)<\/body>)'
   res = '\n\n'.join(re.findall(reg, h, flags=re.IGNORECASE)[0])
-  br = '(?:%s)' % '|'.join(blacklist)
-  res = re.sub(br, '', res)
+  #br = '(?:%s)' % '|'.join(blacklist)
+  #res = re.sub(br, '', res)
   if len(res)>0:
     return res
 
