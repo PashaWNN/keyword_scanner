@@ -164,11 +164,13 @@ class ParsingThread(Thread):
       occurences = (w, [])
       for p in self.pages:
         if len(w)>1:
+          print(w)
           occs = count_occurences(w, p[1])
+          print(occs)
           count = len(occs)
           res = {}
           for oc in occs:
-            s = ' '.join(oc)
+            s = oc
             if not s in res:
               res[s]=1
             else:
@@ -177,6 +179,7 @@ class ParsingThread(Thread):
           sov = sovp.make_agree_with_number(count).word
           self._log('Ключевая фраза: %s. Найдено %i %s: %s.' % (w, count, sov, occs))
           occurences[1].append((p[0], res))
+          print(res)
       self.result.append(occurences)
     self.progress = 100.0
     self.completed = True

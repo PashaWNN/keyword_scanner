@@ -1,0 +1,36 @@
+<html>
+  <head>
+    <title>{{ title }}</title>
+  </head>
+  <body>
+      {% for res in result %}
+        <p>Вхождения фразы "{{ res[0] }}":</p>
+        <table style="width: 100%; border: 1px solid;">
+          {% for res in result %}
+            <tr colspan="{{ res[1]|length }}">
+              <td>
+                {{ res[0] }}
+              </td>
+              <td>
+                Ссылка:
+              </td>
+              <td>
+                Вхождения:
+              </td>
+            </tr>
+            {% for r in res[1] %}
+              <tr>
+                <td></td>
+                <td colspan="{{ r[1]|length }}">{{ r[0] }}</td>
+                <td>
+                  {% for occur in r[1] %} 
+                      <p>{{ occur }}: {{ r[1][occur] }}</p>
+                  {% endfor %}
+                </td>
+              </tr>
+            {% endfor %}
+          {% endfor %}
+        </table>
+      {% endfor %}
+  </body>
+</html>

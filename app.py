@@ -135,6 +135,18 @@ def delete(id):
     return redirect('/')
 
 
+@app.route('/view_report/<int:id>')
+def view_report(id):
+  if not 'authorized' in session:
+    return redirect('/')
+  try:
+    l = tasks[id].result
+  except IndexError:
+    flash('Ошибка создания CSV')
+    return redirect('/')
+  return render_template('report.html', result=l, title=APP_NAME)
+
+
 @app.route('/download_log/<int:id>')
 def get_log(id):
   if not 'authorized' in session:
