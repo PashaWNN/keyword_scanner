@@ -6,7 +6,6 @@
       {% for res in result %}
         <p>Вхождения фразы "{{ res[0] }}":</p>
         <table style="width: 100%; border: 1px solid;">
-          {% for res in result %}
             <tr colspan="{{ res[1]|length }}">
               <td>
                 {{ res[0] }}
@@ -29,7 +28,6 @@
                 </td>
               </tr>
             {% endfor %}
-          {% endfor %}
         </table>
       {% endfor %}
   </body>

@@ -3,9 +3,7 @@ from threading import Thread
 from time import sleep
 from requests import get as rget
 from random import seed, choice, randint
-from json import dump
 from config import BLACKLIST_FILE
-import csv
 import time
 
 
@@ -95,8 +93,8 @@ def strip_html(h):
   """
   reg = r'(?:description" content="(.+)"|<title>(.+)<\/title>|<body>([\S\s]+)<\/body>)'
   res = '\n\n'.join(re.findall(reg, h, flags=re.IGNORECASE)[0])
-  #br = '(?:%s)' % '|'.join(blacklist)
-  #res = re.sub(br, '', res)
+  # br = '(?:%s)' % '|'.join(blacklist)
+  # res = re.sub(br, '', res)
   if len(res)>0:
     return res
 
@@ -121,11 +119,9 @@ class ParsingThread(Thread):
     self.paused = False
     self.stopped = False
 
-
   def _log(self, s):
     t = time.asctime()
     self._log_s.append('[%s] %s\r\n' % (t, s))
-
 
   def run(self):
     self.starttime = time.asctime()
@@ -185,14 +181,11 @@ class ParsingThread(Thread):
     self._log('Работа завершена. Время начала: %s' % self.starttime)
     self.stoptime = time.asctime()
 
-
   def get_progress(self):
     return '%.2f' % self.progress
 
-
   def get_error(self):
     return ''
-
 
   def get_log(self, full=False):
     s = ''
@@ -201,13 +194,11 @@ class ParsingThread(Thread):
       s+=line
     return s
 
-
   def stop(self):
     self._log('Преждевременная остановка.')
     self.stoptime = time.asctime()
     self.completed = True
     self.stopped = True
-
 
   def get_state(self, h=False):
     if self.completed:
