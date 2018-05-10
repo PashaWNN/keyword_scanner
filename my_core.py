@@ -164,9 +164,7 @@ class ParsingThread(Thread):
       occurences = (w, [])
       for p in self.pages:
         if len(w)>1:
-          print(w)
           occs = count_occurences(w, p[1])
-          print(occs)
           count = len(occs)
           res = {}
           for oc in occs:
